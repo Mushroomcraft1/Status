@@ -6,7 +6,7 @@
         "port": 443,
         "path": "/api/webhooks/<webhookID>/<webhookToken>"
     },
-    "serverport": 888,
+    "serverport": 80,
     "pingfrequency": 5000,
     "storageduration": 600000,
     "systems": [
