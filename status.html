@@ -133,7 +133,7 @@
             ctx.fillStyle = gradient
             ctx.beginPath()
             for (let i2 = 0; i2 < obj.pings.length - 1; i2++) {
-                if (validate(obj.pings[i2]) > peak) peak = validate(obj.pings[i2])
+                if (obj.pings[i2] > peak) peak = obj.pings[i2]
                 ctx.moveTo(sectionWidth * i2, canvas.height - sectionHeight * validate(obj.pings[i2]))
                 ctx.lineTo(sectionWidth * (i2 + 1), canvas.height - sectionHeight * validate(obj.pings[i2 + 1]))
             }
@@ -148,7 +148,7 @@
             ctx.closePath()
             ctx.fill()
             ctx.beginPath()
-            y = canvas.height - sectionHeight * peak
+            y = canvas.height - sectionHeight * validate(peak)
             while (x < canvas.width) {
                 ctx.moveTo(x, y)
                 x += 10
