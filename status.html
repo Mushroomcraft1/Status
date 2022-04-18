@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status</title>
+    <style>
+        :root {
+            --default: #00ff00;
+            --default-transparent: #00ff0088;
+            --online: #00ff00;
+            --offline: #ff0000;
+            --background: #000000;
+            --borders: 20px;
+            --size: 300px
+        }
+        ::-webkit-scrollbar {
+            background-color: var(--background)
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--default-transparent);
+            border-radius: 10px
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--default)
+        }
+        body {
+            background-color: var(--background);
+            margin: 10%;
+            color: var(--default);
+            font-family: sans-serif
+        }
+        .display {
+            border-radius: var(--borders);
+            padding: var(--borders);
+            margin: calc(var(--borders) / 2);
+            border: solid;
+            border-color: var(--default-transparent);
+            display: inline-block;
+            border-width: 2px;
+            width: var(--size)
+        }
+        .online {
+            color: var(--online);
+            display: inline-block
+        }
+        .offline {
+            color: var(--offline);
+            display: inline-block
+        }
+        @media only screen and (max-width: 940px) {
+           :root {
+               --size: 80%
+           } 
+        }
+    </style>
+</head>
+<body>
+    <div id=body></div>
+    <script>
+        const Http = new XMLHttpRequest()
+        const body = document.getElementById("body")
+        const mouse = { x: 0, y: 0 }
+        body.innerText = "Loading..."
+        document.onmousemove = handlePageEvent
+        function handlePageEvent(event) {
+            mouse.x = event.clientX 
+            mouse.y = event.clientY
+        }
+        getStatus()
+        function getStatus() {
+            Http.open("GET", "/status")
+            Http.send()
+            Http.onloadend = (() => { 
+                if (Http.status !== 200) {
+                    setTimeout(() => { body.innerText = "Loading..."; return getStatus() }, 5000)
+                    return body.innerText = `Error: ${Http.statusText}`
+                } else {
+                    this.parsed = JSON.parse(Http.responseText)
+                    if (body.innerText === "Loading...") {
+                        body.innerText = ""
+                        parsed.forEach(s => createDisplay(s))
+                        for (let i in this.parsed) render(this.parsed[i], i)
+                    } else {
+                        for (let i in this.parsed) render(this.parsed[i], i)
+                    }
+                    return setTimeout(() => { return getStatus() }, 5000)
+                }
+            })
+        }
+        function setHover(value) {
+            if (value !== null) {
+                for (let i in this.parsed) if (i == value) data = this.parsed[i]
+                if (!data) return
+                render(data, value)
+                const canvas = document.getElementById(`${value}canvas`)
+                const ctx = canvas.getContext("2d")
+                const bounds = canvas.getBoundingClientRect()
+                const x = Math.round(mouse.x - bounds.x), y = Math.round(mouse.y - bounds.y)
+                if (x < 0 || y < 0) return
+                if (x > bounds.width || y > bounds.height) return
+                const n = Math.round((data.pings.length - 1) / bounds.width * x)
+                const ping = data.pings[n]
+                const point = { x: n * (canvas.width / (data.pings.length - 1)), y: canvas.height - (canvas.height / 500) * validate(ping) }
+                ctx.fillStyle = "#ffffff"
+                ctx.fillRect(point.x - 2, point.y - 2, 4, 4)
+                ctx.font = "20px sans-serif"
+                if (ping !== null) pingText = ping + "ms"; else pingText = "Failed"
+                ctx.fillText(pingText, x, y)
+            } else if (this.parsed) {
+                for (let i in this.parsed) render(parsed[i], i)
+            }
+        }
+        function createDisplay(obj) {
+            let style = "", status
+            if (obj.colour) style = `border-color: ${obj.colour}88; color: ${obj.colour}`
+            if (obj.pings[obj.pings.length - 2]) status = `<div id=${body.children.length}status class=offline>Online!</div>`; else status = `<div id=${body.children.length}status class=offline>Offline</div>`
+            body.innerHTML += `<div id=${body.children.length} class=display style="${style}">${HTMLSafe(obj.name)}: ${status}<canvas id=${body.children.length}canvas onmousemove="setHover(${body.children.length})" onmouseleave="setHover(null)" style="width: 100%; height: calc(100% / 1.25)"></canvas></div>`
+        }
+        function render(obj, i) {
+            i = parseInt(i), def = getComputedStyle(body).getPropertyValue("--default"), peak = 0, x = 0, y = 0
+            const canvas = document.getElementById(`${i}canvas`)
+            const ctx = canvas.getContext("2d")
+            const sectionWidth = canvas.width / (obj.pings.length - 1), sectionHeight = canvas.height / 500
+            const status = document.getElementById(`${i}status`)
+            if (obj.pings[obj.pings.length - 2]) status.classList.remove("offline"), status.classList.add("online"), status.innerText = "Online!"; else status.classList.add("offline"), status.classList.remove("online"), status.innerText = "Offline"
+            ctx.clearRect(-10, -10, canvas.width + 10, canvas.height + 10)
+            ctx.strokeStyle = obj.colour ?? def
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+            gradient.addColorStop(0, ctx.strokeStyle + "00")
+            gradient.addColorStop(1, ctx.strokeStyle)
+            ctx.fillStyle = gradient
+            ctx.beginPath()
+            for (let i2 = 0; i2 < obj.pings.length - 1; i2++) {
+                if (validate(obj.pings[i2]) > peak) peak = validate(obj.pings[i2])
+                ctx.moveTo(sectionWidth * i2, canvas.height - sectionHeight * validate(obj.pings[i2]))
+                ctx.lineTo(sectionWidth * (i2 + 1), canvas.height - sectionHeight * validate(obj.pings[i2 + 1]))
+            }
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(0, canvas.height)
+            for (let i2 = 0; i2 < obj.pings.length - 1; i2++) {
+                ctx.lineTo(sectionWidth * i2, canvas.height - sectionHeight * validate(obj.pings[i2]))
+                ctx.lineTo(sectionWidth * (i2 + 1), canvas.height - sectionHeight * validate(obj.pings[i2 + 1]))
+            }
+            ctx.lineTo(canvas.width, canvas.height)
+            ctx.closePath()
+            ctx.fill()
+            ctx.beginPath()
+            y = canvas.height - sectionHeight * peak
+            while (x < canvas.width) {
+                ctx.moveTo(x, y)
+                x += 10
+                ctx.lineTo(x, y)
+                x += 10
+            }
+            ctx.stroke()
+            ctx.font = "20px sans-serif"
+            const measure = ctx.measureText(peak + "ms"), height = measure.fontBoundingBoxAscent + measure.fontBoundingBoxDescent
+            y += height / 4
+            if (y + 5 > canvas.height) y = canvas.height - 5
+            if (y - height < 0) y = 20
+            ctx.fillStyle = "#00000088"
+            ctx.fillRect(0, 0, 70, canvas.height)
+            ctx.fillStyle = obj.colour ?? def
+            ctx.fillText(peak + "ms", 5, y)
+        }
+        function validate(ping) {
+            if (ping > 500) return 500; else if (!ping) return 0; else return ping
+        }
+        function HTMLSafe(str) {
+            let out = ""
+            for (const char of str) {
+                if (char.match(/[\x20-\x7e]/g)) out += `&#x${char.charCodeAt(0).toString(16)};`
+            }
+            return out
+        }
+    </script>
+</body>
+</html>

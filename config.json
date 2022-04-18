@@ -1,0 +1,63 @@
+{
+    "devs": ["717070380795428866", "442724872326479899"],
+    "message": "{\"content\":\"%DEVS%, **%SYSTEM%** is offline!\"}",
+    "webhook": {
+        "host": "discord.com",
+        "port": 443,
+        "path": "/api/webhooks/<webhookID>/<webhookToken>"
+    },
+    "serverport": 888,
+    "pingfrequency": 5000,
+    "storageduration": 600000,
+    "systems": [
+        {
+            "name": "A service",
+            "host": "example.com",
+            "port": 443,
+            "path": "/"
+        },
+        {
+           "name": "Website",
+           "host": "slashbot.dev",
+           "port": 443,
+           "path": "/api/stats",
+           "colour": "#e06900",
+           "notify": true
+        },
+        {
+           "name": "Google",
+           "host": "google.com",
+           "port": 443,
+           "path": "/404",
+           "colour": "#ffff00"
+        },
+        {
+           "name": "Discord",
+           "host": "discord.com",
+           "port": 443,
+           "path": "/404",
+           "colour": "#5865F2"
+        },
+        {
+           "name": "Stackoverflow (very important)",
+           "host": "stackoverflow.com",
+           "port": 443,
+           "path": "/404",
+           "colour": "#F48024"
+        },
+        {
+           "name": "YouTube",
+           "host": "youtube.com",
+           "port": 443,
+           "path": "/404",
+           "colour": "#ff0000"
+        },
+        {
+           "name": "MEE6",
+           "host": "mee6.xyz",
+           "port": 443,
+           "path": "/",
+           "colour": "#62CFF8"
+        }
+    ]
+}
