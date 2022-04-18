@@ -162,7 +162,8 @@
             if (y + 5 > canvas.height) y = canvas.height - 5
             if (y - height < 0) y = 20
             ctx.fillStyle = "#00000088"
-            ctx.fillRect(0, 0, 70, canvas.height)
+            if (measure.width + 10 > 70) width =  measure.width + 10; else width = 70
+            ctx.fillRect(0, 0, width, canvas.height)
             ctx.fillStyle = obj.colour ?? def
             ctx.fillText(peak + "ms", 5, y)
         }
