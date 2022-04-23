@@ -97,7 +97,7 @@
                 const canvas = document.getElementById(`${value}canvas`)
                 const ctx = canvas.getContext("2d")
                 const bounds = canvas.getBoundingClientRect()
-                const x = Math.round(mouse.x - bounds.x), y = Math.round(mouse.y - bounds.y)
+                let x = Math.round(mouse.x - bounds.x), y = Math.round(mouse.y - bounds.y)
                 if (x < 0 || y < 0) return
                 if (x > bounds.width || y > bounds.height) return
                 const n = Math.round((data.pings.length - 1) / bounds.width * x)
@@ -107,6 +107,9 @@
                 ctx.fillRect(point.x - 2, point.y - 2, 4, 4)
                 ctx.font = "20px sans-serif"
                 if (ping !== null) pingText = ping + "ms"; else pingText = "Failed"
+                const measure = ctx.measureText(pingText), height = measure.fontBoundingBoxAscent + measure.fontBoundingBoxDescent
+                if (x + measure.width + 3 > canvas.width) x = canvas.width - (measure.width + 3)
+                if (y - height - 3 < 0) y = 0 + (height + 3)
                 ctx.fillText(pingText, x, y)
             } else if (this.parsed) {
                 for (let i in this.parsed) render(parsed[i], i)
